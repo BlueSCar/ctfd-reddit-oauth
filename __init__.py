@@ -42,7 +42,7 @@ def load(app):
         endpoint = (
             get_app_config("REDDIT_AUTHORIZATION_ENDPOINT")
             or get_config("reddit_authorization_endpoint")
-            or "https://www.reddit.com/api/v1/authorize"
+            or "https://ssl.reddit.com/api/v1/authorize"
         )
 
         client_id = get_app_config("REDDIT_CLIENT_ID") or get_config("reddit_client_id")
@@ -76,7 +76,7 @@ def load(app):
             url = (
                 get_app_config("REDDIT_TOKEN_ENDPOINT")
                 or get_config("reddit_token_endpoint")
-                or "https://www.reddit.com/api/v1/access_token"
+                or "https://ssl.reddit.com/api/v1/access_token"
             )
 
             client_id = get_app_config("REDDIT_CLIENT_ID") or get_config("reddit_client_id")
@@ -84,12 +84,11 @@ def load(app):
                 "reddit_client_secret"
             )
             callback_url = get_app_config("REDDIT_CALLBACK_URL") or get_config("reddit_callback_url")
+            client_auth = requests.auth.HTTPBasicAuth(client_id, client_secret)
 
-            user_token = base64.b64encode("{user}:{password}".format( user=client_id, password=client_secret ).encode("utf-8"))
+            headers = {"content-type": "application/x-www-form-urlencoded", "User-Agent": "College Football Risk Challenges 1.0"}
 
-            headers = {"content-type": "application/x-www-form-urlencoded", "Authorization" : "Basic {user_token}".format( user_token=user_token )}
-            
-            token_request = requests.post(url, data="grant_type=authorization_code&code={code}&redirect_uri={uri}".format( code=oauth_code, uri=callback_url), headers=headers)
+            token_request = requests.post(url, auth=client_auth, data={"grant_type": "authorization_code", "code": oauth_code, "redirect_uri": callback_url}, headers=headers)
 
             if token_request.status_code == requests.codes.ok:
                 token = token_request.json()["access_token"]
@@ -101,13 +100,15 @@ def load(app):
 
                 headers = {
                     "Authorization": "Bearer " + str(token),
-                    "Content-type": "application/json",
+                    "User-Agent": "College Football Risk Challenges 1.0"
                 }
-                api_data = requests.get(url=user_url, headers=headers).json()
+                api_response = requests.get(url=user_url, headers=headers)
+                log("logins", str(api_response))
+                api_data = api_response.json()
 
                 user_id = api_data["id"]
                 user_name = api_data["name"]
-                user_email = api_data["email"]
+                user_email = api_data["name"] + "@reddit.com"
 
                 user = Users.query.filter_by(name=user_name).first()
                 if user is None:
@@ -122,7 +123,7 @@ def load(app):
                         db.session.add(user)
                         db.session.commit()
                     else:
-                        log("logins", "[{date}] {ip} - Public registration via MLC blocked")
+                        log("logins", "[{date}] {ip} - Public registration via Reddit blocked")
                         error_for(
                             endpoint="auth.login",
                             message="Public registration is disabled. Please try again later.",
@@ -161,6 +162,9 @@ def load(app):
                 return redirect(url_for("challenges.listing"))
             else:
                 log("logins", "[{date}] {ip} - OAuth token retrieval failure")
+                log("logins", str(token_request))
+                log("logins", str(token_request.status_code))
+                log("logins", token_request.json()["access_token"])
                 error_for(endpoint="auth.login", message="OAuth token retrieval failure.")
                 return redirect(url_for("auth.login"))
         else:
