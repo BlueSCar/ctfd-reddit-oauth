@@ -1,3 +1,54 @@
+{% extends "admin/base.html" %}
+
+{% block stylesheets %}
+{% endblock %}
+
+{% block content %}
+	<div class="jumbotron">
+		<div class="container">
+			<h1>Reddit OAuth</h1>
+		</div>
+	</div>
+
+	<div class="container">
+		<div class="row">
+			<div class="col-md-6 offset-md-3">
+				<form method="POST" id="reddit_settings">
+						<p class="text-center">Reddit Configuration</p>
+						<div class="form-group">
+							<div class="form-group">
+								<label>Reddit Client Id</label>
+								<input class="form-control" name='reddit_client_id' type='text' placeholder="Client Id" {% if reddit_client_id is defined and reddit_client_id != None %}value="{{ reddit_client_id }}"{% endif %}>
+							</div>
+							<div class="form-group">
+								<label>Reddit Client Secret</label>
+								<input class="form-control" name='reddit_client_secret' type='text' placeholder="Client Secret">
+							</div>
+						</div>
+						<input id="nonce" name='nonce' type='hidden' value="{{ nonce }}">
+						<div class="float-right">
+							<button type="submit" class="btn btn-success text-center">Submit</button>
+						</div>
+				</form>
+			</div>
+		</div>
+	</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script type="text/javascript">
+    $('#reddit_settings').submit(function(e){
+        e.preventDefault();
+        $.post(window.location.pathname, $(this).serialize(), function(data){
+            if (data == 1){
+                window.location.reload();
+            }
+        });
+    });
+</script>
+{% endblock %}
+
 <div role="tabpanel" class="tab-pane config-section" id="mlc">
 	<form method="POST" autocomplete="off" class="w-100">
 

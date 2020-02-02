@@ -85,7 +85,7 @@ def load(app):
             )
             callback_url = get_app_config("REDDIT_CALLBACK_URL") or get_config("reddit_callback_url")
 
-            user_token = base64.b64encode("{user}:{password}".format( user=client_id, password=client_secret ))
+            user_token = base64.b64encode("{user}:{password}".format( user=client_id, password=client_secret ).encode("utf-8"))
 
             headers = {"content-type": "application/x-www-form-urlencoded", "Authorization" : "Basic {user_token}".format( user_token=user_token )}
             data = {
