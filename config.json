@@ -1,0 +1,4 @@
+{
+    "name": "CTFd Reddit OAuth",
+    "route": "/admin/reddit"
+}
