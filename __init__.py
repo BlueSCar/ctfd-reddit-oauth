@@ -30,6 +30,11 @@ import base64
 import requests
 
 def load(app):
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    template_path = os.path.join(dir_path, 'reddit-signin.html')
+    override_template('register.html', open(template_path).read())
+    override_template('login.html', open(template_path).read())
+
     @app.route("/reddit")
     def reddit_login():
         endpoint = (
