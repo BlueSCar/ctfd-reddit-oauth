@@ -88,12 +88,8 @@ def load(app):
             user_token = base64.b64encode("{user}:{password}".format( user=client_id, password=client_secret ).encode("utf-8"))
 
             headers = {"content-type": "application/x-www-form-urlencoded", "Authorization" : "Basic {user_token}".format( user_token=user_token )}
-            data = {
-                "code": oauth_code,
-                "redirect_uri": callback_url,
-                "grant_type": "authorization_code",
-            }
-            token_request = requests.post(url, data=data, headers=headers)
+            
+            token_request = requests.post(url, data="grant_type=authorization_code&code={code}&redirect_uri={uri}".format( code=oauth_code, uri=callback_url), headers=headers)
 
             if token_request.status_code == requests.codes.ok:
                 token = token_request.json()["access_token"]
@@ -113,7 +109,7 @@ def load(app):
                 user_name = api_data["name"]
                 user_email = api_data["email"]
 
-                user = Users.query.filter_by(email=user_email).first()
+                user = Users.query.filter_by(name=user_name).first()
                 if user is None:
                     # Check if we are allowing registration before creating users
                     if registration_visible():
