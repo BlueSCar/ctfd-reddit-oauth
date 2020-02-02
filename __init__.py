@@ -11,7 +11,7 @@ from itsdangerous.exc import BadTimeSignature, SignatureExpired, BadSignature
 
 from CTFd.models import db, Users, Teams
 
-from CTFd.utils import get_config, get_app_config
+from CTFd.utils import get_config, get_app_config, override_template
 from CTFd.utils.decorators import ratelimit
 from CTFd.utils import user as current_user
 from CTFd.utils import config, validators
@@ -26,6 +26,7 @@ from CTFd.utils.modes import TEAMS_MODE
 from CTFd.utils.security.signing import unserialize
 from CTFd.utils.helpers import error_for, get_errors
 
+import os
 import base64
 import requests
 
