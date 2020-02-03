@@ -34,8 +34,22 @@ import requests
 def load(app):
     dir_path = os.path.dirname(os.path.realpath(__file__))
     template_path = os.path.join(dir_path, 'reddit-signin.html')
-    override_template('register.html', open(template_path).read())
     override_template('login.html', open(template_path).read())
+
+    template_path = os.path.join(dir_path, 'reddit-register.html')
+    override_template('register.html', open(template_path).read())
+
+    template_path = os.path.join(dir_path, 'reddit-scoreboard.html')
+    override_template('scoreboard.html', open(template_path).read())
+
+    template_path = os.path.join(dir_path, 'reddit-scoreboard.html')
+    override_template('scoreboard.html', open(template_path).read())
+
+    template_path = os.path.join(dir_path, 'reddit-users.html')
+    override_template('users.html', open(template_path).read())
+
+    template_path = os.path.join(dir_path, 'reddit-public.html')
+    override_template('public.html', open(template_path).read())
 
     @app.route("/reddit")
     def reddit_login():
@@ -83,10 +97,11 @@ def load(app):
             client_secret = get_app_config("REDDIT_CLIENT_SECRET") or get_config(
                 "reddit_client_secret"
             )
+            reddit_user_agent = get_app_config("REDDIT_USER_AGENT") or get_config("reddit_user_agent")
             callback_url = get_app_config("REDDIT_CALLBACK_URL") or get_config("reddit_callback_url")
             client_auth = requests.auth.HTTPBasicAuth(client_id, client_secret)
 
-            headers = {"content-type": "application/x-www-form-urlencoded", "User-Agent": "College Football Risk Challenges 1.0"}
+            headers = {"content-type": "application/x-www-form-urlencoded", "User-Agent": reddit_user_agent}
 
             token_request = requests.post(url, auth=client_auth, data={"grant_type": "authorization_code", "code": oauth_code, "redirect_uri": callback_url}, headers=headers)
 
@@ -100,7 +115,7 @@ def load(app):
 
                 headers = {
                     "Authorization": "Bearer " + str(token),
-                    "User-Agent": "College Football Risk Challenges 1.0"
+                    "User-Agent": reddit_user_agent
                 }
                 api_response = requests.get(url=user_url, headers=headers)
                 log("logins", str(api_response))
